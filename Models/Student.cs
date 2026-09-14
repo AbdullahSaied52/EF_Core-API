@@ -3,6 +3,8 @@ using System.Collections.Generic;
 
 namespace EF_API.Models;
 
+public enum StudentStatus { Active,Graduated, Suspended};
+
 public partial class Student
 {
     public int StudentId { get; set; }

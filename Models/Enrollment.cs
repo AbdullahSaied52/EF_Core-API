@@ -3,6 +3,8 @@ using System.Collections.Generic;
 
 namespace EF_API.Models;
 
+public enum EnrollmentStatus {Active, Completed,Dropped};
+
 public partial class Enrollment
 {
     public int EnrollmentId { get; set; }
