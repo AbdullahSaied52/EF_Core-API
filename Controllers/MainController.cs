@@ -1,0 +1,125 @@
+﻿using EF_API.DBcontext;
+using EF_API.Models;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+//packeges for EF Version 8.0.0
+//Microsoft.EntityFrameworkCore
+//Microsoft.EntityFrameworkCore.SqlServer
+//Microsoft.EntityFrameworkCore.Tools
+//Microsoft.Extensions.Configuration
+//Microsoft.Extensions.Configuration.Binder
+//Microsoft.Extensions.Configuration.Json
+
+//scaffolding
+//tools-> nuegetpackage manager-> package manager console
+// Scaffold-DbContext "Server=localhost;Database=TrainingCenterDb;Trusted_Connection=True;TrustServerCertificate=True;" Microsoft.EntityFrameworkCore.SqlServer -OutputDir Models
+
+
+namespace EF_API.Controllers
+{
+    [Route("api/Main")]
+    [ApiController]
+    public class MainController : ControllerBase
+    {
+        private readonly TrainingCenterDbContext _context;
+
+        public MainController(TrainingCenterDbContext context)
+        {
+            _context = context;
+        }
+
+        [HttpGet("List-All-Students")]
+        public async Task<ActionResult<IEnumerable<Student>>> ListAllStudents()
+        {
+            var student =await  _context.Students.AsNoTracking().ToListAsync();
+            
+            return student;
+        }
+
+        [HttpGet("List-Graduated-Students")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task< ActionResult<IEnumerable<Student>>>ListGraduated()
+
+        {
+            var graduated_query = _context.Students.AsNoTracking().Where(s => s.Status == "Graduated").ToList();
+            if (graduated_query.Count == 0) return NotFound("no one is graduated");
+            return Ok( graduated_query);
+        }
+
+        [HttpGet("number-of-students-for-each-status")]
+        public async Task< ActionResult<Dictionary<string,int>>> NumberOfEachStatus()
+        {
+            var num = await _context.Students.AsNoTracking().GroupBy(s => s.Status)
+                .Select(g=>new
+                {
+                    status_1=g.Key,
+                    count_1=g.Count()
+                })
+                .ToDictionaryAsync(d => d.status_1, d => d.count_1);
+            return num;
+        }
+
+        [HttpPut("Update-Student/{student_id}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<Student>> Update(int student_id,[FromBody]string status)
+        {
+            if (student_id < 1) return BadRequest("the Student ID must be greater than 0");
+
+            var student = await _context.Students.FirstOrDefaultAsync(s => s.StudentId == student_id);
+            if (student == null) return NotFound("the Student is not Exist");
+
+            student.Status = status;
+
+
+            await _context.SaveChangesAsync();
+            return Ok(student);
+        }
+
+
+        [HttpDelete("Delete-Student/{student_id}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<ActionResult> Delete(int student_id)
+        {
+            if (student_id < 1) return BadRequest("the ID must be greater than 0");
+            var student = await _context.Students.FirstOrDefaultAsync(s => s.StudentId == student_id);
+            if (student == null) return NotFound("this student is not here");
+
+
+            _context.Students.Remove(student);
+            await _context.SaveChangesAsync();
+            return NoContent();
+        }
+
+        [HttpGet("Get-Enrollments-for-each-student{student_id}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<ActionResult> EnrollmentsForEachStudent(int student_id)
+        {
+            if (student_id < 1) return BadRequest("the ID must be greater than 0");
+
+            var student = await _context.Students.Where(s=>s.StudentId==student_id)
+                .Select(s => new
+                {
+                    fullname = s.FirstName + " " + s.LastName,
+                     enrolled_at= s.Enrollments.Select(e=>new
+                     {
+                         course_title=e.Course.Title
+                     })
+                }).FirstOrDefaultAsync();
+
+            if (student == null) return NotFound("this student is not here");
+
+            return Ok( student);
+
+        }
+
+    }
+
+}
