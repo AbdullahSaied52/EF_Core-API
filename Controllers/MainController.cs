@@ -65,14 +65,14 @@ namespace EF_API.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<Student>> Update(int student_id,[FromBody]string status)
+        public async Task<ActionResult<Student>> Update(int student_id,[FromBody]StudentStatus status)
         {
             if (student_id < 1) return BadRequest("the Student ID must be greater than 0");
 
             var student = await _context.Students.FirstOrDefaultAsync(s => s.StudentId == student_id);
             if (student == null) return NotFound("the Student is not Exist");
 
-            student.Status = status;
+            student.Status =Convert.ToString( status);
 
 
             await _context.SaveChangesAsync();
@@ -110,7 +110,9 @@ namespace EF_API.Controllers
                     fullname = s.FirstName + " " + s.LastName,
                      enrolled_at= s.Enrollments.Select(e=>new
                      {
-                         course_title=e.Course.Title
+                         course_title=e.Course.Title,
+                         grade=e.FinalGrade,
+                         status=e.Status
                      })
                 }).FirstOrDefaultAsync();
 
@@ -120,6 +122,29 @@ namespace EF_API.Controllers
 
         }
 
+        [HttpPut("Updated-Enrollment-Status-for-student{student_id}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<ActionResult> UpdateEnrollmentStatus(int student_id,int grade ,EnrollmentStatus status,string course_code)
+        {
+            if (student_id < 1)
+                return BadRequest("student id must be greater than 0");
+
+            var enrollment = await _context.Enrollments.Where(e => e.StudentId == student_id &&
+            e.Course.Code == course_code).FirstOrDefaultAsync();
+            if (enrollment == null)
+                return NotFound("this student is not enrolled in any courses");
+            
+            enrollment.Status = status.ToString();
+            if (grade < 0)
+                return BadRequest("grade must be greater than or equal 0");
+            enrollment.FinalGrade = grade;
+            enrollment.CompletionDate = DateTime.Now;
+            await _context.SaveChangesAsync();
+            return Ok(enrollment);
+
+        }
     }
 
 }
