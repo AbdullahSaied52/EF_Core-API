@@ -3,6 +3,7 @@ using EF_API.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Linq;
 //packeges for EF Version 8.0.0
 //Microsoft.EntityFrameworkCore
 //Microsoft.EntityFrameworkCore.SqlServer
@@ -35,6 +36,29 @@ namespace EF_API.Controllers
             var student =await  _context.Students.AsNoTracking().ToListAsync();
             
             return student;
+        }
+
+        [HttpGet("Average-Grade-for-each-Course")]
+        public async Task<ActionResult> AverageGradeForEachCourse()
+        {
+            var grade = await _context.Enrollments.GroupBy(e => e.Course.Title).Select(g => new
+            {
+                course_title = g.Key,
+                avg_grade = g.Average(a=>a.FinalGrade)
+            }).ToListAsync();
+            return Ok(grade);
+        }
+        
+        [HttpGet("List-All-Students-Order-by-date-of-enrollment")]
+        public async Task<ActionResult> ListOrderOfStudentsByDate()
+        {
+            var students = await _context.Enrollments.AsNoTracking()
+                .OrderBy(e => e.EnrollmentDate).DistinctBy(e=>e.StudentId).Select(e => new
+            {
+                student_name=e.Student.FirstName+" "+e.Student.LastName,
+                date=e.EnrollmentDate
+            }).ToListAsync();
+            return Ok(students);
         }
 
         [HttpGet("List-Graduated-Students")]
@@ -72,7 +96,7 @@ namespace EF_API.Controllers
             var student = await _context.Students.FirstOrDefaultAsync(s => s.StudentId == student_id);
             if (student == null) return NotFound("the Student is not Exist");
 
-            student.Status =Convert.ToString( status);
+            student.Status = status.ToString();
 
 
             await _context.SaveChangesAsync();
