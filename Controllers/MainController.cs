@@ -44,7 +44,7 @@ namespace EF_API.Controllers
             var grade = await _context.Enrollments.GroupBy(e => e.Course.Title).Select(g => new
             {
                 course_title = g.Key,
-                avg_grade = g.Average(a=>a.FinalGrade)
+                avg_grade = g.Average(e=>e.FinalGrade)
             }).ToListAsync();
             return Ok(grade);
         }
@@ -168,6 +168,32 @@ namespace EF_API.Controllers
             await _context.SaveChangesAsync();
             return Ok(enrollment);
 
+        }
+
+        [HttpGet("Get-Students-of-Specific-Course{course_id}")]
+        public async Task<ActionResult> GetStudentsforSpecificCourse(int course_id)
+        {
+            var students =await _context.Enrollments.Where(e => e.CourseId == course_id)
+                .Select(e => new
+                {
+                    student_name=e.Student.FirstName+" "+e.Student.LastName,
+                    student_status=e.Status
+                }).
+                ToListAsync();
+            return Ok(students);
+        }
+
+        [HttpGet("Get-completed-courses-for-a-student{student_id}")]
+        public async Task<ActionResult> GetCompletedCoursesForStudent(int student_id)
+        {
+            var complete = await _context.Students.Where(e => e.StudentId == student_id).Select(e => new
+            {
+                student_name = e.FirstName + " " + e.LastName,
+                number_of_courses = e.Enrollments.Count(),
+                completed_courses = e.Enrollments.Where(en => en.Status == "Completed").Count()
+            }).ToListAsync();
+
+            return Ok( complete);
         }
     }
 
