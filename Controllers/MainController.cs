@@ -146,7 +146,7 @@ namespace EF_API.Controllers
 
         }
 
-        [HttpPut("Updated-Enrollment-Status-for-student{student_id}")]
+        [HttpPut("Updated-Enrollment-Status-for-student/{student_id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -170,7 +170,7 @@ namespace EF_API.Controllers
 
         }
 
-        [HttpGet("Get-Students-of-Specific-Course{course_id}")]
+        [HttpGet("Get-Students-of-Specific-Course/{course_id}")]
         public async Task<ActionResult> GetStudentsforSpecificCourse(int course_id)
         {
             var students =await _context.Enrollments.Where(e => e.CourseId == course_id)
@@ -183,18 +183,40 @@ namespace EF_API.Controllers
             return Ok(students);
         }
 
-        [HttpGet("Get-completed-courses-for-a-student{student_id}")]
+        [HttpGet("Get-completed-courses-for-a-student/{student_id}")]
         public async Task<ActionResult> GetCompletedCoursesForStudent(int student_id)
         {
             var complete = await _context.Students.Where(e => e.StudentId == student_id).Select(e => new
             {
                 student_name = e.FirstName + " " + e.LastName,
                 number_of_courses = e.Enrollments.Count(),
-                completed_courses = e.Enrollments.Where(en => en.Status == "Completed").Count()
-            }).ToListAsync();
+                completed_courses = e.Enrollments.Count(en => en.Status == "Completed")
+            }).FirstOrDefaultAsync();
 
             return Ok( complete);
         }
+
+        [HttpGet("Get-Full-student-profile/{student_id}")]
+        public async Task<ActionResult> GetFullProgile(int student_id)
+        {
+            var student = await _context.Students.Where(s => s.StudentId == student_id).Select(s => new
+            {
+                profile = s.StudentProfile,
+                courses = s.Enrollments.Select(c=>new
+                {
+                    title=c.Course.Title,
+                    grade=c.FinalGrade,
+                    status=c.Status,
+                    instructor=c.Course.Instructor.FirstName+" "+c.Course.Instructor.LastName
+                })
+
+            }).FirstOrDefaultAsync();
+
+            return Ok(student);
+        }
+
+
+
     }
 
 }
