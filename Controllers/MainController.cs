@@ -40,6 +40,22 @@ namespace EF_API.Controllers
             return Ok( student);
         }
 
+        [HttpGet("Dynamic-Filter-for-Students")]
+        public async Task<ActionResult> FilterStudents(string? first_name,string? status,bool sorted_be_name=false)
+        {
+            var query = _context.Students.AsNoTracking().AsQueryable();
+
+            if (!string.IsNullOrEmpty( first_name))
+                query = query.Where(s => s.FirstName == first_name);
+            if (!string.IsNullOrEmpty(status))
+                query = query.Where(s => s.Status == status);
+            if (sorted_be_name)
+                query = query.OrderBy(s => s.FirstName);
+            var list=await query.ToListAsync();
+
+            return Ok(list);
+        }
+
         [HttpGet("Average-Grade-for-each-Course")]
         public async Task<ActionResult> AverageGradeForEachCourse()
         {
@@ -188,7 +204,7 @@ namespace EF_API.Controllers
                     student_status=e.Status
                 }).
                 ToListAsync();
-            if (students == null) return NotFound("this course is not exist");
+            if (students.Count == 0) return NotFound("this course is not exist");
             return Ok(students);
         }
 
@@ -264,8 +280,23 @@ namespace EF_API.Controllers
         }
 
         [HttpPost("Enroll-Student/{student_id}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult> EnrollStudent(int student_id,int course_id)
         {
+            if (student_id < 1) return BadRequest("the student id must be greater than 0");
+            if(course_id<1) return BadRequest("the course id must be greater than 0");
+
+            var student = await _context.Students.FindAsync(student_id);
+            if (student == null) return NotFound("this student is not exist");
+
+            var course= await _context.Courses.FindAsync(course_id);
+            if (student == null) return NotFound("this course is not exist");
+
+            var enrollment = await _context.Enrollments.AnyAsync(e => e.StudentId == student_id && e.CourseId == course_id);
+            if (enrollment) return BadRequest("this student is enrolled in this course");
+
             var enroll = new Enrollment { StudentId = student_id, CourseId = course_id ,
                 Status=EnrollmentStatus.Active.ToString(),EnrollmentDate=DateTime.Now};
 
