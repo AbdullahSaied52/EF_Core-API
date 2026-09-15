@@ -3,6 +3,7 @@ using EF_API.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Identity.Client;
 using System.Linq;
 using System.Numerics;
 //packeges for EF Version 8.0.0
@@ -260,6 +261,17 @@ namespace EF_API.Controllers
 
 
             return Ok(report);
+        }
+
+        [HttpPost("Enroll-Student/{student_id}")]
+        public async Task<ActionResult> EnrollStudent(int student_id,int course_id)
+        {
+            var enroll = new Enrollment { StudentId = student_id, CourseId = course_id ,
+                Status=EnrollmentStatus.Active.ToString(),EnrollmentDate=DateTime.Now};
+
+             await _context.Enrollments.AddAsync(enroll);
+             await _context.SaveChangesAsync();
+            return Ok(enroll);
         }
 
     }
