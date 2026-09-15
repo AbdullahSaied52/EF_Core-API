@@ -239,7 +239,28 @@ namespace EF_API.Controllers
             return Ok(student);
         }
 
-        
+        [HttpGet("Instructors-Report/{instructor_id}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<ActionResult> InstructorReport(int instructor_id)
+        {
+            if (instructor_id < 1)
+                return BadRequest("insrtuctor id must be greater than 0");
+
+            var report =await _context.Instructors.Where(e => e.InstructorId == instructor_id).Select(c => new
+            {
+                instructor_name = c.FirstName + " " + c.LastName,
+                total_courses = c.Courses.Count(),
+                total_enrolled_students = c.Courses.SelectMany(s=>s.Enrollments).Count(),
+                average = c.Courses.SelectMany(s=>s.Enrollments).Average(a=>a.FinalGrade)
+            }).FirstOrDefaultAsync();
+
+            if (report == null) return NotFound("this instructor not has a report");
+
+
+            return Ok(report);
+        }
 
     }
 
