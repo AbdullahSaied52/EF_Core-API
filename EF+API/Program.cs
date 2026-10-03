@@ -1,6 +1,10 @@
-﻿using EF_API.DBcontext;
+﻿using Application.Intrefaces;
+using Application.Services;
+using EF_API.DBcontext;
+using Infrastructure.StudentRepositry;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Application.Intrefaces;
 using System;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -10,15 +14,16 @@ builder.Services.AddDbContext<TrainingCenterDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
     .LogTo(Console.WriteLine, LogLevel.Information));
 
-builder.Services.AddControllers();
-
-
 
 // Add services to the container.
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+
+builder.Services.AddScoped<IStudentRepositry, studentRepository>();
+builder.Services.AddScoped<StudentService>();
 
 var app = builder.Build();
 

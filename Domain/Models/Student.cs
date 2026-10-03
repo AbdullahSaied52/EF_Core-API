@@ -26,4 +26,5 @@ public partial class Student
     public virtual ICollection<Enrollment> Enrollments { get; set; } = new List<Enrollment>();
 
     public virtual StudentProfile? StudentProfile { get; set; }
+
 }

@@ -1,4 +1,5 @@
-﻿using EF_API.DBcontext;
+﻿using Application.Services;
+using EF_API.DBcontext;
 using EF_API.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -27,15 +28,22 @@ namespace EF_API.Controllers
     {
         private readonly TrainingCenterDbContext _context;
 
-        public MainController(TrainingCenterDbContext context)
+        private readonly StudentService _studentservice;
+
+        //public MainController(TrainingCenterDbContext context)
+        //{
+        //    _context = context;
+        //}
+
+        public MainController(StudentService studentservice)
         {
-            _context = context;
+            _studentservice = studentservice;
         }
 
         [HttpGet("List-All-Students")]
         public async Task<ActionResult<IEnumerable<Student>>> ListAllStudents()
         {
-            var student =await  _context.Students.AsNoTracking().ToListAsync();
+            var student =await _studentservice.ListAllAsync();
             
             return Ok( student);
         }
