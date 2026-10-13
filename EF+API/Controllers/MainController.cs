@@ -51,15 +51,7 @@ namespace EF_API.Controllers
         [HttpGet("Dynamic-Filter-for-Students")]
         public async Task<ActionResult> FilterStudents(string? first_name,string? status,bool sorted_be_name=false)
         {
-            var query = _context.Students.AsNoTracking().AsQueryable();
-
-            if (!string.IsNullOrEmpty( first_name))
-                query = query.Where(s => s.FirstName == first_name);
-            if (!string.IsNullOrEmpty(status))
-                query = query.Where(s => s.Status == status);
-            if (sorted_be_name)
-                query = query.OrderBy(s => s.FirstName);
-            var list=await query.ToListAsync();
+            var list = await _studentservice.filterStudentsAsync(first_name, status, sorted_be_name);
 
             return Ok(list);
         }

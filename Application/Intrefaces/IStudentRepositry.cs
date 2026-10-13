@@ -11,5 +11,9 @@ namespace Application.Intrefaces
     {
         Task<IReadOnlyList<Student>> ListAllAsync();
 
+        Task<IReadOnlyList<Student>> filterStudentsAsync(string? first_name, string? status, bool sorted_be_name = false);
+
+
+
     }
 }
