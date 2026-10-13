@@ -23,5 +23,7 @@ namespace Application.Intrefaces
         Task<IReadOnlyList<StatusCountDTO>> NumberOfEachStatus();
 
         Task<bool> Update(int student_id, StudentStatus status);
+
+        Task<bool> Delete(int student_id);
     }
 }

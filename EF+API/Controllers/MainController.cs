@@ -93,10 +93,10 @@ namespace EF_API.Controllers
         {
             if (student_id < 1) return BadRequest("the Student ID must be greater than 0");
 
-            var student = await _studenRepository.Update(student_id,status);
-            if (student == false) return NotFound("the Student is not Exist");
+            var check = await _studenRepository.Update(student_id,status);
+            if (check == false) return NotFound("the Student is not Exist");
 
-            return Ok(student);
+            return Ok("Updated");
         }
 
 
@@ -107,12 +107,8 @@ namespace EF_API.Controllers
         public async Task<ActionResult> Delete(int student_id)
         {
             if (student_id < 1) return BadRequest("the ID must be greater than 0");
-            var student = await _context.Students.FirstOrDefaultAsync(s => s.StudentId == student_id);
-            if (student == null) return NotFound("this student is not here");
-
-
-            _context.Students.Remove(student);
-            await _context.SaveChangesAsync();
+            var check = await _studenRepository.Delete(student_id);
+            if (check == false) return NotFound("this student is not here");
             return NoContent();
         }
 

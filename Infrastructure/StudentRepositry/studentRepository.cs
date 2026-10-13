@@ -92,5 +92,16 @@ namespace Infrastructure.StudentRepositry
             return true;
 
         }
+
+        public async Task<bool> Delete(int student_id)
+        {
+            var student = await _context.Students.FirstOrDefaultAsync(s => s.StudentId == student_id);
+            if (student == null) return false;
+
+            _context.Students.Remove(student);
+            await _context.SaveChangesAsync();
+
+            return true;
+        }
     }
 }
