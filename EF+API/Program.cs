@@ -1,5 +1,4 @@
 ﻿using Application.Intrefaces;
-using Application.Services;
 using EF_API.DBcontext;
 using Infrastructure.StudentRepositry;
 using Microsoft.EntityFrameworkCore;
@@ -23,7 +22,6 @@ builder.Services.AddSwaggerGen();
 
 
 builder.Services.AddScoped<IStudentRepositry, studentRepository>();
-builder.Services.AddScoped<StudentService>();
 
 var app = builder.Build();
 

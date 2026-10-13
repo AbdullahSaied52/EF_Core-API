@@ -1,4 +1,5 @@
-﻿using Application.Services;
+﻿using Application.Intrefaces;
+using Domain.DTOs;
 using EF_API.DBcontext;
 using EF_API.Models;
 using Microsoft.AspNetCore.Http;
@@ -28,22 +29,17 @@ namespace EF_API.Controllers
     {
         private readonly TrainingCenterDbContext _context;
 
-        private readonly StudentService _studentservice;
+        private readonly IStudentRepositry _studenRepository;
 
-        //public MainController(TrainingCenterDbContext context)
-        //{
-        //    _context = context;
-        //}
-
-        public MainController(StudentService studentservice)
+        public MainController(IStudentRepositry studentRepositry)
         {
-            _studentservice = studentservice;
+            _studenRepository = studentRepositry;
         }
 
         [HttpGet("List-All-Students")]
         public async Task<ActionResult<IEnumerable<Student>>> ListAllStudents()
         {
-            var student =await _studentservice.ListAllAsync();
+            var student =await _studenRepository.ListAllAsync();
             
             return Ok( student);
         }
@@ -51,7 +47,7 @@ namespace EF_API.Controllers
         [HttpGet("Dynamic-Filter-for-Students")]
         public async Task<ActionResult> FilterStudents(string? first_name,string? status,bool sorted_be_name=false)
         {
-            var list = await _studentservice.filterStudentsAsync(first_name, status, sorted_be_name);
+            var list = await _studenRepository.filterStudentsAsync(first_name, status, sorted_be_name);
 
             return Ok(list);
         }
@@ -59,23 +55,15 @@ namespace EF_API.Controllers
         [HttpGet("Average-Grade-for-each-Course")]
         public async Task<ActionResult> AverageGradeForEachCourse()
         {
-            var grade = await _context.Enrollments.GroupBy(e => e.Course.Title).Select(g => new
-            {
-                course_title = g.Key,
-                avg_grade = g.Average(e=>e.FinalGrade)
-            }).ToListAsync();
+            var grade =await _studenRepository.AverageGradeForEachCourse();
+            
             return Ok(grade);
         }
         
         [HttpGet("List-All-Students-Order-by-date-of-enrollment")]
         public async Task<ActionResult> ListOrderOfStudentsByDate()
         {
-            var students = await _context.Enrollments
-                .OrderBy(e => e.EnrollmentDate).Select(e => new
-            {
-                student_name=e.Student.FirstName+" "+e.Student.LastName,
-                date=e.EnrollmentDate
-            }).ToListAsync();
+            var students = await _studenRepository.ListOrderOfStudentsByDate();
             return Ok(students);
         }
 

@@ -1,4 +1,5 @@
-﻿using EF_API.Models;
+﻿using Domain.DTOs;
+using EF_API.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,6 +14,9 @@ namespace Application.Intrefaces
 
         Task<IReadOnlyList<Student>> filterStudentsAsync(string? first_name, string? status, bool sorted_be_name = false);
 
+        Task<IReadOnlyList<AverageGradeDTO>> AverageGradeForEachCourse();
+
+        Task<IReadOnlyList< StudentName_DateDTO>> ListOrderOfStudentsByDate();
 
 
     }

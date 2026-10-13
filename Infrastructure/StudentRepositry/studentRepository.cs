@@ -1,4 +1,5 @@
 ﻿using Application.Intrefaces;
+using Domain.DTOs;
 using EF_API.DBcontext;
 using EF_API.Models;
 using Microsoft.EntityFrameworkCore;
@@ -38,6 +39,27 @@ namespace Infrastructure.StudentRepositry
             return students;
         }
 
+        public async Task<IReadOnlyList<AverageGradeDTO>> AverageGradeForEachCourse()
+        {
+            var grade = await _context.Enrollments.GroupBy(e => e.Course.Title).Select(g => new AverageGradeDTO
+            {
+                course_title = g.Key,
+                avg_grade =Convert.ToDecimal( g.Average(e => e.FinalGrade))
+            }).ToListAsync();
+
+            return grade;
+        }
+
+        public async Task<IReadOnlyList< StudentName_DateDTO>> ListOrderOfStudentsByDate()
+        {
+            var students = await _context.Enrollments
+                    .OrderBy(e => e.EnrollmentDate).Select(a => new StudentName_DateDTO
+                    {
+                        name = a.Student.FirstName + " " + a.Student.LastName,
+                        date = a.EnrollmentDate
+                    }).ToListAsync();
+            return students;            
+        }
 
 
     }
