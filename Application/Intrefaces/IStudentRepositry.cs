@@ -18,6 +18,10 @@ namespace Application.Intrefaces
 
         Task<IReadOnlyList< StudentName_DateDTO>> ListOrderOfStudentsByDate();
 
+        Task<IReadOnlyList<Student>> ListGraduated();
 
+        Task<IReadOnlyList<StatusCountDTO>> NumberOfEachStatus();
+
+        Task<bool> Update(int student_id, StudentStatus status);
     }
 }

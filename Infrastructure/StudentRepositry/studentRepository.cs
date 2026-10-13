@@ -61,6 +61,36 @@ namespace Infrastructure.StudentRepositry
             return students;            
         }
 
+        public async Task<IReadOnlyList<Student>> ListGraduated()
+        {
+            var graduated_query =await _context.Students.AsNoTracking().Where(s => s.Status == "Graduated").ToListAsync();
+            //if (graduated_query.Count == 0) return NotFound("no one is graduated");
 
+            return graduated_query;
+        }
+
+        public async Task<IReadOnlyList<StatusCountDTO>> NumberOfEachStatus()
+        {
+            var num = await _context.Students.GroupBy(s => s.Status)
+    .Select(g => new StatusCountDTO
+    {
+        status = g.Key,
+        count = g.Count()
+    }).ToListAsync();
+            return num;
+
+        }
+
+        public async Task<bool> Update(int student_id, StudentStatus status)
+        {
+            var student = await _context.Students.FirstOrDefaultAsync(s => s.StudentId == student_id);
+            
+            if (student == null) return false;
+
+            student.Status = Convert.ToString(status);
+            _context.SaveChangesAsync();
+            return true;
+
+        }
     }
 }

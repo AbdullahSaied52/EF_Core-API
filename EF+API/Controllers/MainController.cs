@@ -73,21 +73,15 @@ namespace EF_API.Controllers
         public async Task< ActionResult<IEnumerable<Student>>>ListGraduated()
 
         {
-            var graduated_query =await _context.Students.AsNoTracking().Where(s => s.Status == "Graduated").ToListAsync();
-            if (graduated_query.Count == 0) return NotFound("no one is graduated");
-            return Ok( graduated_query);
+            var graduated = await _studenRepository.ListGraduated();
+            if (graduated.Count == 0) return NotFound("no one is graduated");
+            return Ok( graduated);
         }
 
         [HttpGet("number-of-students-for-each-status")]
         public async Task< ActionResult> NumberOfEachStatus()
         {
-            var num = await _context.Students.GroupBy(s => s.Status)
-                .Select(g => new
-                {
-                    status_1 = g.Key,
-                    count_1 = g.Count()
-                })
-                .ToListAsync();//.ToDictionaryAsync(d => d.status_1, d => d.count_1);
+            var num = await _studenRepository.NumberOfEachStatus();
             return Ok( num);
         }
 
@@ -95,17 +89,13 @@ namespace EF_API.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<Student>> Update(int student_id,[FromBody]StudentStatus status)
+        public async Task<ActionResult<Student>> Update(int student_id,[FromBody]StudentStatus status)// input status : 0 or 1 or 2
         {
             if (student_id < 1) return BadRequest("the Student ID must be greater than 0");
 
-            var student = await _context.Students.FirstOrDefaultAsync(s => s.StudentId == student_id);
-            if (student == null) return NotFound("the Student is not Exist");
+            var student = await _studenRepository.Update(student_id,status);
+            if (student == false) return NotFound("the Student is not Exist");
 
-            student.Status = status.ToString();
-
-
-            await _context.SaveChangesAsync();
             return Ok(student);
         }
 
