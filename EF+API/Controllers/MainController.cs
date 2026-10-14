@@ -136,20 +136,11 @@ namespace EF_API.Controllers
         {
             if (student_id < 1)
                 return BadRequest("student id must be greater than 0");
-
-            var enrollment = await _context.Enrollments.Where(e => e.StudentId == student_id &&
-            e.Course.Code == course_code).FirstOrDefaultAsync();
-
-            if (enrollment == null)
-                return NotFound("this student is not enrolled in any courses");
-            
-            enrollment.Status = status.ToString();
             if (grade < 0)
                 return BadRequest("grade must be greater than or equal 0");
-            enrollment.FinalGrade = grade;
-            enrollment.CompletionDate = DateTime.Now;
-            await _context.SaveChangesAsync();
-            return Ok(enrollment);
+
+            var edit = await _studenRepository.UpdateEnrollmentStatus(student_id, grade, status, course_code);
+            return Ok("updated");
 
         }
 
@@ -161,13 +152,7 @@ namespace EF_API.Controllers
         {
             if (course_id < 0) return BadRequest("the id must be greater than 0");
 
-            var students =await _context.Enrollments.Where(e => e.CourseId == course_id)
-                .Select(e => new
-                {
-                    student_name=e.Student.FirstName+" "+e.Student.LastName,
-                    student_status=e.Status
-                }).
-                ToListAsync();
+            var students = await _studenRepository.GetStudentsforSpecificCourse(course_id);
             if (students.Count == 0) return NotFound("this course is not exist");
             return Ok(students);
         }

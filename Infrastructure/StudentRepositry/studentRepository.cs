@@ -120,5 +120,33 @@ namespace Infrastructure.StudentRepositry
 
             return check;
         }
+
+        public async Task<bool> UpdateEnrollmentStatus(int student_id, int grade, EnrollmentStatus status, string course_code)
+        {
+            var enrollment = await _context.Enrollments.Where(e => e.StudentId == student_id &&
+                    e.Course.Code == course_code).FirstOrDefaultAsync();
+
+            if (enrollment == null)
+                return false;
+
+            enrollment.Status = status.ToString();
+
+            enrollment.FinalGrade = grade;
+            enrollment.CompletionDate = DateTime.Now;
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
+        public async Task<IReadOnlyList<StudentName_DateDTO>> GetStudentsforSpecificCourse(int course_id)
+        {
+            var students = await _context.Enrollments.Where(e => e.CourseId == course_id)
+                .Select(e => new StudentName_DateDTO
+                {
+                    name = e.Student.FirstName + " " + e.Student.LastName,
+                    status = e.Status
+                }).
+                ToListAsync();
+            return students;
+        }
     }
 }
