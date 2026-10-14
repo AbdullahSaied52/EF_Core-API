@@ -25,5 +25,7 @@ namespace Application.Intrefaces
         Task<bool> Update(int student_id, StudentStatus status);
 
         Task<bool> Delete(int student_id);
+
+        Task<StudentInfoForEnrollmentDTO> EnrollmentsForAStudent(int student_id);
     }
 }

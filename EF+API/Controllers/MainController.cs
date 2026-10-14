@@ -120,17 +120,7 @@ namespace EF_API.Controllers
         {
             if (student_id < 1) return BadRequest("the ID must be greater than 0");
 
-            var student = await _context.Students.Where(s=>s.StudentId==student_id)
-                .Select(s => new
-                {
-                    fullname = s.FirstName + " " + s.LastName,
-                     enrolled_at= s.Enrollments.Select(e=>new
-                     {
-                         course_title=e.Course.Title,
-                         grade=e.FinalGrade,
-                         status=e.Status
-                     })
-                }).FirstOrDefaultAsync();
+            var student = await _studenRepository.EnrollmentsForAStudent(student_id);
 
             if (student == null) return NotFound("this student is not here");
 

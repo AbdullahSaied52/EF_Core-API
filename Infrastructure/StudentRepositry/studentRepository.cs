@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace Infrastructure.StudentRepositry
 {
-    public class studentRepository:IStudentRepositry
+    public class studentRepository : IStudentRepositry
     {
         private readonly TrainingCenterDbContext _context;
 
@@ -102,6 +102,23 @@ namespace Infrastructure.StudentRepositry
             await _context.SaveChangesAsync();
 
             return true;
+        }
+
+        public async Task<StudentInfoForEnrollmentDTO> EnrollmentsForAStudent(int student_id)
+        {
+            var check = await _context.Students.Where(s => s.StudentId == student_id)
+    .Select(s => new StudentInfoForEnrollmentDTO
+    {
+        full_name = s.FirstName + " " + s.LastName,
+        enrolled_at = s.Enrollments.Select(e => new EnrollmentsForStudentsDTO
+        {
+            title = e.Course.Title,
+            grade = Convert.ToInt32(e.FinalGrade),
+            status = e.Status
+        }).ToList()
+    }).FirstOrDefaultAsync();
+
+            return check;
         }
     }
 }
