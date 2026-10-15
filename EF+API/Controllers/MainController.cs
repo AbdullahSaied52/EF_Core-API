@@ -166,44 +166,39 @@ namespace EF_API.Controllers
             if (student_id < 1)
                 return BadRequest("student id must be greater than 0");
 
-            var complete = await _context.Students.Where(e => e.StudentId == student_id).Select(e => new
-            {
-                student_name = e.FirstName + " " + e.LastName,
-                number_of_courses = e.Enrollments.Count(),
-                completed_courses = e.Enrollments.Count(en => en.Status == "Completed")
-            }).FirstOrDefaultAsync();
+            var complete = await _studenRepository.GetCompletedCoursesForStudent(student_id);
 
             if (complete == null) return NotFound("this student is not exist");
 
             return Ok( complete);
         }
 
-        [HttpGet("Get-Full-student-profile/{student_id}")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult> GetFullProfile(int student_id)
-        {
-            if (student_id < 1)
-                return BadRequest("student id must be greater than 0");
+        //[HttpGet("Get-Full-student-profile/{student_id}")]
+        //[ProducesResponseType(StatusCodes.Status200OK)]
+        //[ProducesResponseType(StatusCodes.Status400BadRequest)]
+        //[ProducesResponseType(StatusCodes.Status404NotFound)]
+        //public async Task<ActionResult> GetFullProfile(int student_id)
+        //{
+        //    if (student_id < 1)
+        //        return BadRequest("student id must be greater than 0");
 
-            var student = await _context.Students.Where(s => s.StudentId == student_id).Select(s => new
-            {
-                profile = s.StudentProfile,
-                courses = s.Enrollments.Select(c=>new
-                {
-                    title=c.Course.Title,
-                    grade=c.FinalGrade,
-                    status=c.Status,
-                    instructor=c.Course.Instructor.FirstName+" "+c.Course.Instructor.LastName
-                })
+        //    var student = await _context.Students.Where(s => s.StudentId == student_id).Select(s => new
+        //    {
+        //        profile = s.StudentProfile,
+        //        courses = s.Enrollments.Select(c=>new
+        //        {
+        //            title=c.Course.Title,
+        //            grade=c.FinalGrade,
+        //            status=c.Status,
+        //            instructor=c.Course.Instructor.FirstName+" "+c.Course.Instructor.LastName
+        //        })
 
-            }).FirstOrDefaultAsync();
+        //    }).FirstOrDefaultAsync();
 
-            if (student == null) return NotFound("this student is not exist");
+        //    if (student == null) return NotFound("this student is not exist");
 
-            return Ok(student);
-        }
+        //    return Ok(student);
+        //}
 
         [HttpGet("Instructors-Report/{instructor_id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
@@ -214,45 +209,38 @@ namespace EF_API.Controllers
             if (instructor_id < 1)
                 return BadRequest("insrtuctor id must be greater than 0");
 
-            var report =await _context.Instructors.Where(e => e.InstructorId == instructor_id).Select(c => new
-            {
-                instructor_name = c.FirstName + " " + c.LastName,
-                total_courses = c.Courses.Count(),
-                total_enrolled_students = c.Courses.SelectMany(s=>s.Enrollments).Count(),
-                average = c.Courses.SelectMany(s=>s.Enrollments).Average(a=>a.FinalGrade)
-            }).FirstOrDefaultAsync();
+            var report = await _studenRepository.InstructorReport(instructor_id);
 
             if (report == null) return NotFound("this instructor not has a report");
-
 
             return Ok(report);
         }
 
-        [HttpPost("Enroll-Student/{student_id}")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult> EnrollStudent(int student_id,int course_id)
-        {
-            if (student_id < 1) return BadRequest("the student id must be greater than 0");
-            if(course_id<1) return BadRequest("the course id must be greater than 0");
+        //[HttpPost("Enroll-Student/{student_id}")]
+        //[ProducesResponseType(StatusCodes.Status200OK)]
+        //[ProducesResponseType(StatusCodes.Status400BadRequest)]
+        //[ProducesResponseType(StatusCodes.Status404NotFound)]
+        //public async Task<ActionResult> EnrollStudent(int student_id,int course_id)
+        //{
+        //    if (student_id < 1) return BadRequest("the student id must be greater than 0");
+        //    if(course_id<1) return BadRequest("the course id must be greater than 0");
 
-            var student = await _context.Students.FindAsync(student_id);
-            if (student == null) return NotFound("this student is not exist");
+        //    var student = await _context.Students.FindAsync(student_id);
+        //    if (student == null) return NotFound("this student is not exist");
 
-            var course= await _context.Courses.FindAsync(course_id);
-            if (student == null) return NotFound("this course is not exist");
+        //    var course= await _context.Courses.FindAsync(course_id);
+        //    if (student == null) return NotFound("this course is not exist");
 
-            var enrollment = await _context.Enrollments.AnyAsync(e => e.StudentId == student_id && e.CourseId == course_id);
-            if (enrollment) return BadRequest("this student is enrolled in this course");
+        //    var enrollment = await _context.Enrollments.AnyAsync(e => e.StudentId == student_id && e.CourseId == course_id);
+        //    if (enrollment) return BadRequest("this student is enrolled in this course");
 
-            var enroll = new Enrollment { StudentId = student_id, CourseId = course_id ,
-                Status=EnrollmentStatus.Active.ToString(),EnrollmentDate=DateTime.Now};
+        //    var enroll = new Enrollment { StudentId = student_id, CourseId = course_id ,
+        //        Status=EnrollmentStatus.Active.ToString(),EnrollmentDate=DateTime.Now};
 
-             await _context.Enrollments.AddAsync(enroll);
-             await _context.SaveChangesAsync();
-            return Ok(enroll);
-        }
+        //     await _context.Enrollments.AddAsync(enroll);
+        //     await _context.SaveChangesAsync();
+        //    return Ok(enroll);
+        //}
 
     }
 

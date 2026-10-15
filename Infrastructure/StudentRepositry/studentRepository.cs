@@ -148,5 +148,29 @@ namespace Infrastructure.StudentRepositry
                 ToListAsync();
             return students;
         }
+
+        public async Task<StudentInfoForCourseDTO> GetCompletedCoursesForStudent(int student_id)
+        {
+            var complete = await _context.Students.Where(e => e.StudentId == student_id).Select(e => new StudentInfoForCourseDTO
+            {
+                name = e.FirstName + " " + e.LastName,
+                number_of_courses = e.Enrollments.Count(),
+                completed_courses = e.Enrollments.Count(en => en.Status == "Completed")
+            }).FirstOrDefaultAsync();
+            return complete;
+        }
+
+        public async Task<InstructorReportDTO> InstructorReport(int instructor_id)
+        {
+            var report = await _context.Instructors.Where(e => e.InstructorId == instructor_id).Select(c => new InstructorReportDTO
+            {
+                name = c.FirstName + " " + c.LastName,
+                total_courses = c.Courses.Count(),
+                total_enrolled_students = c.Courses.SelectMany(s => s.Enrollments).Count(),
+                average =Convert.ToDecimal( c.Courses.SelectMany(s => s.Enrollments).Average(a => a.FinalGrade))
+            }).FirstOrDefaultAsync();
+
+            return report;
+        }
     }
 }
