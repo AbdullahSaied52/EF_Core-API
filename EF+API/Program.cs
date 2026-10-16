@@ -22,7 +22,6 @@ builder.Services.AddSwaggerGen();
 
 
 builder.Services.AddScoped<IStudentRepositry, studentRepository>();
-
 var app = builder.Build();
 
 //test

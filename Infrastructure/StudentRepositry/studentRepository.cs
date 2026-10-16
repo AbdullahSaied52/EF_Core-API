@@ -88,7 +88,7 @@ namespace Infrastructure.StudentRepositry
             if (student == null) return false;
 
             student.Status = Convert.ToString(status);
-            _context.SaveChangesAsync();
+            //_context.SaveChangesAsync();
             return true;
 
         }
@@ -99,7 +99,7 @@ namespace Infrastructure.StudentRepositry
             if (student == null) return false;
 
             _context.Students.Remove(student);
-            await _context.SaveChangesAsync();
+            //await _context.SaveChangesAsync();
 
             return true;
         }
@@ -133,7 +133,7 @@ namespace Infrastructure.StudentRepositry
 
             enrollment.FinalGrade = grade;
             enrollment.CompletionDate = DateTime.Now;
-            await _context.SaveChangesAsync();
+            //await _context.SaveChangesAsync();
             return true;
         }
 
@@ -171,6 +171,13 @@ namespace Infrastructure.StudentRepositry
             }).FirstOrDefaultAsync();
 
             return report;
+        }
+
+
+
+        void IStudentRepositry.savechanges()
+        {
+             _context.SaveChangesAsync();
         }
     }
 }

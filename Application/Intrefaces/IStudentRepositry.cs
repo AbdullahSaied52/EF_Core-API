@@ -34,5 +34,7 @@ namespace Application.Intrefaces
 
         Task<StudentInfoForCourseDTO> GetCompletedCoursesForStudent(int student_id);
         Task<InstructorReportDTO> InstructorReport(int instructor_id);
+
+        void savechanges();
     }
 }

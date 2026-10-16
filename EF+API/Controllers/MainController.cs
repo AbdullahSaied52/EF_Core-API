@@ -27,8 +27,6 @@ namespace EF_API.Controllers
     [ApiController]
     public class MainController : ControllerBase
     {
-        private readonly TrainingCenterDbContext _context;
-
         private readonly IStudentRepositry _studenRepository;
 
         public MainController(IStudentRepositry studentRepositry)
@@ -96,6 +94,8 @@ namespace EF_API.Controllers
             var check = await _studenRepository.Update(student_id,status);
             if (check == false) return NotFound("the Student is not Exist");
 
+            _studenRepository.savechanges();
+
             return Ok("Updated");
         }
 
@@ -109,6 +109,8 @@ namespace EF_API.Controllers
             if (student_id < 1) return BadRequest("the ID must be greater than 0");
             var check = await _studenRepository.Delete(student_id);
             if (check == false) return NotFound("this student is not here");
+
+            _studenRepository.savechanges();
             return NoContent();
         }
 
@@ -140,6 +142,7 @@ namespace EF_API.Controllers
                 return BadRequest("grade must be greater than or equal 0");
 
             var edit = await _studenRepository.UpdateEnrollmentStatus(student_id, grade, status, course_code);
+            _studenRepository.savechanges();
             return Ok("updated");
 
         }
@@ -173,33 +176,6 @@ namespace EF_API.Controllers
             return Ok( complete);
         }
 
-        //[HttpGet("Get-Full-student-profile/{student_id}")]
-        //[ProducesResponseType(StatusCodes.Status200OK)]
-        //[ProducesResponseType(StatusCodes.Status400BadRequest)]
-        //[ProducesResponseType(StatusCodes.Status404NotFound)]
-        //public async Task<ActionResult> GetFullProfile(int student_id)
-        //{
-        //    if (student_id < 1)
-        //        return BadRequest("student id must be greater than 0");
-
-        //    var student = await _context.Students.Where(s => s.StudentId == student_id).Select(s => new
-        //    {
-        //        profile = s.StudentProfile,
-        //        courses = s.Enrollments.Select(c=>new
-        //        {
-        //            title=c.Course.Title,
-        //            grade=c.FinalGrade,
-        //            status=c.Status,
-        //            instructor=c.Course.Instructor.FirstName+" "+c.Course.Instructor.LastName
-        //        })
-
-        //    }).FirstOrDefaultAsync();
-
-        //    if (student == null) return NotFound("this student is not exist");
-
-        //    return Ok(student);
-        //}
-
         [HttpGet("Instructors-Report/{instructor_id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -215,32 +191,6 @@ namespace EF_API.Controllers
 
             return Ok(report);
         }
-
-        //[HttpPost("Enroll-Student/{student_id}")]
-        //[ProducesResponseType(StatusCodes.Status200OK)]
-        //[ProducesResponseType(StatusCodes.Status400BadRequest)]
-        //[ProducesResponseType(StatusCodes.Status404NotFound)]
-        //public async Task<ActionResult> EnrollStudent(int student_id,int course_id)
-        //{
-        //    if (student_id < 1) return BadRequest("the student id must be greater than 0");
-        //    if(course_id<1) return BadRequest("the course id must be greater than 0");
-
-        //    var student = await _context.Students.FindAsync(student_id);
-        //    if (student == null) return NotFound("this student is not exist");
-
-        //    var course= await _context.Courses.FindAsync(course_id);
-        //    if (student == null) return NotFound("this course is not exist");
-
-        //    var enrollment = await _context.Enrollments.AnyAsync(e => e.StudentId == student_id && e.CourseId == course_id);
-        //    if (enrollment) return BadRequest("this student is enrolled in this course");
-
-        //    var enroll = new Enrollment { StudentId = student_id, CourseId = course_id ,
-        //        Status=EnrollmentStatus.Active.ToString(),EnrollmentDate=DateTime.Now};
-
-        //     await _context.Enrollments.AddAsync(enroll);
-        //     await _context.SaveChangesAsync();
-        //    return Ok(enroll);
-        //}
 
     }
 
